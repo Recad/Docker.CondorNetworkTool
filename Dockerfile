@@ -17,4 +17,4 @@
  
  
 
-#ADD condortool.sh /usr/bin
+ADD condornet.sh /usr/bin
