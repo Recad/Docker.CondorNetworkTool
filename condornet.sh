@@ -9,8 +9,42 @@ port=0
 interface=0
 args=$#
 last=${*: -1:1}
+salidaTrace=''
 
 ## Function definitions
+
+
+
+##funcion de error con menu
+function errorMess {
+	 
+	
+	echo "				
+				$1
+	
+				Usage: condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
+
+				-a Automatic	make a report automatically.
+				-f Firewall	was configured to run through most firewalls.
+				-m Master	runs on a condor master node.
+				-s Node		runs on a condor node.        
+				-i Interface	define network interface to use for utilities.
+				-p Port		specify a port for use of the tools
+				-t Test port	try to detect blocked ports in a firewall.
+				-N Internet	define if my resource goes directly to the internet.
+				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
+				-o Outputfile	Name of outputfile.
+				-h Ip_outside	Ip outside of network
+				
+
+
+				?              Help
+			"
+			exit
+	
+	
+
+}
 
 ##Funcion para definir SO- Por ahora solo ubuntu
 function isUbuntu {
@@ -32,10 +66,8 @@ function isHost {
 		
 	else
 		echo "Invalid Host"
-		echo "Usage: condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
-	Use <command> ? for help
-			"
-        exit
+		errorMess
+			
 	fi
 }
 #Valida cantidad de flags y opciones
@@ -44,11 +76,8 @@ function existArguments {
 	if (( $args <1 )); then
 	
 		
-		echo "No options detected
-			Usage: condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
-			Use <command> ? for help
-		"
-		exit 
+		
+		errorMess "No options detected"
 		
 	elif (( $args == 1 )) && [[ $last == '?' ]]; then
 		echo "
@@ -78,7 +107,7 @@ function existArguments {
 }
 ##Funcion para traceroute
 # entrada (host port interface)
-function traceroute {
+function tracerouteFull {
 	
 	
 	if [[ $firewall == true ]]; then
@@ -87,22 +116,36 @@ function traceroute {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			echo "se corre solo con host"
 			
-			salida=$(tcptraceroute "$1")
-			echo $salida
+			salidaTrace=$(tcptraceroute "$1")
+			
+		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
+			echo "con interface y puerto"
+			
+			salidaTrace=$(tcptraceroute "$1" "$2" "$3")
+		
+		else 
+			errorMess "error de opciones -i -p"
 		fi
 		
 		
 	else
-		#echo "holi"
-		#if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
-			
-			
-		#	salida=$(traceroute "$1")
-		#	echo $salida
-		#fi
 		
-		salida=$(traceroute "$1")
-		echo $salida
+		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
+			
+			
+			salidaTrace=$(traceroute "$1")
+			
+		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
+			echo "con interface y puerto"
+			
+			salidaTrace=$(traceroute "$1" "$2" "$3")
+			
+		else
+			errorMess "error de opciones -i -p"
+			
+		fi
+		
+		
 	fi
 	
 
@@ -116,10 +159,33 @@ function AutomaticMode {
 		host=$var1
 		
 	fi
-	echo "voy a entrar a traceroute"
-	traceroute $host $port $interface
+	
+	
+	tracerouteFull $host $port $interface
 	
 }
+
+##funcion que detecta interfaces y compara si una interfaz 
+#ingresada esta en el sistema
+
+function validateinterfaces {
+	
+	validinterfaces=$(ls /sys/class/net)
+	
+	if echo $validinterfaces | grep -w $1 ; then
+	  interface=$1
+	 else 
+		echo "interfaces validas:"
+		echo $validinterfaces
+		errorMess "Interface de red no valida"
+		
+		
+	 
+	fi
+	
+}
+
+
 
 ##Control use
 existArguments
@@ -155,10 +221,10 @@ do
 			exit
 			;;
 		i)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
+			#echo "The value of -f is $OPTARG"
+			
+			#echo $interface
+			validateinterfaces $OPTARG
 			;;
 		t)
 			echo "The value of -f is $OPTARG"
@@ -179,10 +245,16 @@ do
 			exit
 			;;
 		p)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
+			#echo "The value of -f is $OPTARG"
+			
+			
+			if [[ $OPTARG > 0 ]] && [[ $OPTARG < 65535 ]]; then 
+				port=$OPTARG
+				
+			else 		
+				errorMess "No es un puerto valido: "$OPTARG
+			fi
+			
 			;;
 		o)
 			echo "The value of -f is $OPTARG"
