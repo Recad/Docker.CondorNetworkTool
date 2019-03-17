@@ -21,9 +21,9 @@ docker pull recad/condornetworktool
 ```
 
 
-##Usage 
+## Usage 
 
-condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
+	condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
 
 				-a Automatic	make a report automatically.
 				-f Firewall	was configured to run through most firewalls.
