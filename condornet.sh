@@ -150,6 +150,71 @@ function tracerouteFull {
 	
 
 }
+##Funcion para hacer ping
+# entrada (host port interface)
+function PingDetection {
+	
+	if [[ $firewall == true ]]; then
+			
+
+		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
+			echo "se corre solo con host"
+			
+			salidaPing=$(hping3 "$1")
+			
+		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
+			echo "con interface y puerto"
+			
+			salidaTrace=$(hping3 -S -p "$2" -c 6 -I "$3" "$1"  )
+		
+		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
+		##Se debe integrar esta parte con la busqueda de puertos activos
+			salidaTrace=$(hping3 -S -p 22 -c 6 -I "$3" "$1"  )
+			
+		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
+		
+			salidaTrace=$(hping3 -S -p "$2" -c 6 "$1"  )
+		
+		else 
+			errorMess "error de opciones -i -p"
+		fi
+		
+		
+	else
+		
+		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
+			
+			
+			salidaTrace=$(ping -c 6 "$1")
+			
+		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
+			echo "El ping se realizara sin puerto especifico
+				Para hacer ping a un puerto especifico use el flag -f"
+			
+			salidaTrace=$(ping -c 6  -I "$3" "$1")
+			
+		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
+			echo "El ping se realizara sin puerto especifico
+				Para hacer ping a un puerto especifico use el flag -f"
+			
+			salidaTrace=$(ping -c 6  "$1")
+			
+		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
+			
+			salidaTrace=$(ping -c 6  -I "$3" "$1")
+			
+		else
+			errorMess "error de opciones -i -p"
+			
+		fi
+		
+		
+	fi
+	
+
+
+
+}
 
 function AutomaticMode {
 	if [[ $host == 0 ]]; then
@@ -162,6 +227,8 @@ function AutomaticMode {
 	
 	
 	tracerouteFull $host $port $interface
+	
+	#PingDetection $host $port $interface
 	
 }
 

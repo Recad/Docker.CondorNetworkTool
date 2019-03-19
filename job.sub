@@ -1,0 +1,14 @@
+Universe = docker
+JOBNAME  = BuscarSalida
+
+docker_image=recad/condornetworktool
+Executable = ./condornet.sh
+Arguments  = -a -f -h 192.168.28.105
+
+should_transfer_files = YES
+when_to_transfer_output = ON_EXIT
+output = out.$(Process)
+error = err.$(Process)
+log = log.$(Process)
+request_memory = 1024
+queue 1
