@@ -228,7 +228,9 @@ function AutomaticMode {
 		#leer el dato del teclado y guardarlo en la variable de usuario var1
 		read var1
 		host=$var1
-		
+	else 
+	
+	 echo $host	
 	fi
 	
 	
@@ -339,8 +341,7 @@ do
 			echo ""
 			isHost $OPTARG
 			
-			echo $MYOPTF
-			exit
+			
 			;;
 		\?)
 			echo "
