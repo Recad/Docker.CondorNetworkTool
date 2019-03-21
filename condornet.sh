@@ -121,8 +121,14 @@ function tracerouteFull {
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaTrace=$(tcptraceroute "$1" "$2" "$3")
+			salidaTrace=$(tcptraceroute -i "$3" "$1" "$2" )
 		
+		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
+		
+			salidaTrace=$(tcptraceroute "$1" -i "$3")
+			
+		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
+			salidaTrace=$(tcptraceroute "$1" "$2")
 		else 
 			errorMess "error de opciones -i -p"
 		fi
@@ -367,5 +373,10 @@ done
 if [[ $automatic == true ]]; then
 	
 	AutomaticMode
+	
+else 
+ #se debe verificar el host pendiente
+	tracerouteFull $host $port $interface
+
 fi
 
