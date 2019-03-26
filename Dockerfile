@@ -13,7 +13,8 @@
  iputils-ping \
  hping3 \
  tcpdump \
- nmap 
+ nmap \
+ curl
  
  
 

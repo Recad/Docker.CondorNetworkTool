@@ -123,7 +123,7 @@ function tracerouteFull {
 			
 			salidaTrace=$(tcptraceroute -i "$3" "$1" "$2" )
 		
-		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
+		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then 
 		
 			salidaTrace=$(tcptraceroute "$1" -i "$3")
 			
@@ -144,8 +144,16 @@ function tracerouteFull {
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaTrace=$(traceroute "$1" "$2" "$3")
+			salidaTrace=$(traceroute -i "$3" -p "$2" "$1"  )
 			
+		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then 
+		
+			salidaTrace=$(traceroute -i "$3" "$1"  )
+			
+		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
+			
+			salidaTrace=$(traceroute -p "$2" "$1"  )
+		 
 		else
 			errorMess "error de opciones -i -p"
 			
@@ -153,7 +161,7 @@ function tracerouteFull {
 		
 		
 	fi
-	
+	##echo $salidaTrace
 
 }
 ##Funcion para hacer ping
@@ -171,15 +179,15 @@ function PingDetection {
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaTrace=$(hping3 -S -p "$2" -c 6 -I "$3" "$1"  )
+			salidaPing=$(hping3 -S -p "$2" -c 6 -I "$3" "$1"  )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 		##Se debe integrar esta parte con la busqueda de puertos activos
-			salidaTrace=$(hping3 -S -p 22 -c 6 -I "$3" "$1"  )
+			salidaPing=$(hping3 -S -p 22 -c 6 -I "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 		
-			salidaTrace=$(hping3 -S -p "$2" -c 6 "$1"  )
+			salidaPing=$(hping3 -S -p "$2" -c 6 "$1"  )
 		
 		else 
 			errorMess "error de opciones -i -p"
@@ -191,23 +199,23 @@ function PingDetection {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			salidaTrace=$(ping -c 6 "$1")
+			salidaPing=$(ping -c 6 "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "El ping se realizara sin puerto especifico
 				Para hacer ping a un puerto especifico use el flag -f"
 			
-			salidaTrace=$(ping -c 6  -I "$3" "$1")
+			salidaPing=$(ping -c 6  -I "$3" "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 			echo "El ping se realizara sin puerto especifico
 				Para hacer ping a un puerto especifico use el flag -f"
 			
-			salidaTrace=$(ping -c 6  "$1")
+			salidaPing=$(ping -c 6  "$1")
 			
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 			
-			salidaTrace=$(ping -c 6  -I "$3" "$1")
+			salidaPing=$(ping -c 6  -I "$3" "$1")
 			
 		else
 			errorMess "error de opciones -i -p"
@@ -260,6 +268,17 @@ function validateinterfaces {
 	
 }
 
+##funcion que hace curl a la api para saber la ip por la que se sale
+#a internet
+function curlmachine {
+	
+	hostname=$(hostname)
+	direccion=$(curl -o public-"$hostname" https://api.ipify.org?format=json )
+	
+	#echo $direccion
+
+}
+
 
 
 ##Control use
@@ -308,10 +327,8 @@ do
 			exit
 			;;
 		N)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
+			echo "se lanza en modo a internet"
+			curlmachine
 			;;
 		c)
 			echo "The value of -f is $OPTARG"
