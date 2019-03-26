@@ -273,7 +273,7 @@ function validateinterfaces {
 function curlmachine {
 	
 	hostname=$(hostname)
-	direccion=$(curl -o ip.txt https://api.ipify.org?format=json )
+	direccion=$(curl https://api.ipify.org?format=json )
 	
 	echo $direccion
 
