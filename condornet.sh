@@ -275,7 +275,7 @@ function curlmachine {
 	hostname=$(hostname)
 	direccion=$(curl -o ip.txt https://api.ipify.org?format=json )
 	
-	#echo $direccion
+	echo $direccion
 
 }
 
