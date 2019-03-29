@@ -161,7 +161,7 @@ function tracerouteFull {
 		
 		
 	fi
-	##echo $salidaTrace
+	$(echo "$salidaTrace" >> trace.txt)
 
 }
 ##Funcion para hacer ping
@@ -224,7 +224,7 @@ function PingDetection {
 		
 		
 	fi
-	
+	$(echo "$salidaPing" >> trace.txt)
 
 
 
@@ -244,7 +244,7 @@ function AutomaticMode {
 	
 	tracerouteFull $host $port $interface
 	
-	#PingDetection $host $port $interface
+	PingDetection $host $port $interface
 	
 }
 
@@ -273,9 +273,9 @@ function validateinterfaces {
 function curlmachine {
 	
 	hostname=$(hostname)
-	direccion=$(curl https://api.ipify.org?format=json )
+	direccion=$(curl  https://api.ipify.org?format=json )
 	
-	echo $direccion
+	$(echo "$direccion" >> trace.txt)
 
 }
 
