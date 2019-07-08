@@ -3,6 +3,7 @@
 ##Var definitions
 automatic=false
 firewall=false
+netmode=false
 Os='None'
 host=0
 port=0
@@ -10,6 +11,7 @@ interface=0
 args=$#
 last=${*: -1:1}
 salidaTrace=''
+fileName='info.txt'
 
 ## Function definitions
 
@@ -70,6 +72,31 @@ function isHost {
 			
 	fi
 }
+
+
+
+##FUncion que valida la existencia del software requerido y lo instala
+function toolValidator {
+	
+	DRUSH_VERSION="$(traceroute --version)"
+	
+	echo ${DRUSH_VERSION}
+	
+	if [[ "$DRUSH_VERSION" == *"Version"* ]]; then
+		echo "Drush is installed"
+	else
+		echo "$(sudo apt-get install traceroute)"
+	fi
+	
+	
+	
+	
+	
+	
+}
+
+
+
 #Valida cantidad de flags y opciones
 function existArguments {
 	
@@ -161,8 +188,9 @@ function tracerouteFull {
 		
 		
 	fi
-	$(echo "$salidaTrace" >> trace.txt)
-
+	$(echo "Trace result-----------------------------------------------" >> "$fileName")
+	$(echo "$salidaTrace" >> "$fileName")
+	$(echo "-----------------------------------------------------------" >> "$fileName")
 }
 ##Funcion para hacer ping
 # entrada (host port interface)
@@ -224,12 +252,25 @@ function PingDetection {
 		
 		
 	fi
-	$(echo "$salidaPing" >> trace.txt)
-
+	$(echo "Result ping------------------------------------------------" >> "$fileName")
+	$(echo "$salidaPing" >> "$fileName")
+	$(echo "-----------------------------------------------------------" >> "$fileName")
 
 
 }
 
+##funcion de putdate para poner la fecha en el log
+
+function putDate {
+	
+	DATE=`date '+%Y-%m-%d %H:%M:%S'`
+	
+	$(echo "$DATE" >> "$fileName")
+	
+	
+}
+
+##Funcion encargada del modo automatico
 function AutomaticMode {
 	if [[ $host == 0 ]]; then
 		echo 'Introduzca un host:'
@@ -241,6 +282,8 @@ function AutomaticMode {
 	 echo $host	
 	fi
 	
+	
+	curlmachine 
 	
 	tracerouteFull $host $port $interface
 	
@@ -275,7 +318,8 @@ function curlmachine {
 	hostname=$(hostname)
 	direccion=$(curl  https://api.ipify.org?format=json )
 	
-	$(echo "$direccion" >> trace.txt)
+	$(echo "Outside ip--------------------------------------------------" >> "$fileName")
+	$(echo "$direccion" >> "$fileName")
 
 }
 
@@ -285,6 +329,7 @@ function curlmachine {
 existArguments
 isUbuntu
 
+##control de flags
 while getopts "afmsNco:i:p:h:" OPTION
 do
 	case $OPTION in
@@ -293,6 +338,11 @@ do
 		f)
 			echo "Firewall mode"
 			firewall=true
+			;;
+		
+		o)
+			#echo "The value of -f is $OPTARG"
+			fileName=$OPTARG
 			;;
 		
 		a)
@@ -328,7 +378,9 @@ do
 			;;
 		N)
 			echo "se lanza en modo a internet"
-			curlmachine
+			netmode=true
+			
+			##curlmachine 
 			;;
 		c)
 			echo "The value of -f is $OPTARG"
@@ -348,12 +400,7 @@ do
 			fi
 			
 			;;
-		o)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
-			;;
+		
 		h)
 			echo ""
 			isHost $OPTARG
@@ -389,12 +436,19 @@ done
 
 
 if [[ $automatic == true ]]; then
-	
+	putDate
 	AutomaticMode
 	
 else 
- #se debe verificar el host pendiente
-	tracerouteFull $host $port $interface
-
+	
+	if [[ $netmode == true ]]; then
+		curlmachine
+	
+	else 
+		
+ 
+	fi
+	
+ 
 fi
 
