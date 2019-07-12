@@ -4,6 +4,7 @@
 automatic=false
 firewall=false
 netmode=false
+portmode=false
 Os='None'
 host=0
 port=0
@@ -141,7 +142,7 @@ function tracerouteFull {
 			
 
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
-			echo "se corre solo con host"
+		
 			
 			salidaTrace=$(tcptraceroute "$1")
 			
@@ -200,22 +201,22 @@ function PingDetection {
 			
 
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
-			echo "se corre solo con host"
 			
-			salidaPing=$(hping3 "$1")
+			
+			salidaPing=$(sudo hping3 -S -p 22 -c 5 "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaPing=$(hping3 -S -p "$2" -c 6 -I "$3" "$1"  )
+			salidaPing=$(sudo hping3 -S -p "$2" -c 5 -I "$3" "$1"  )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 		##Se debe integrar esta parte con la busqueda de puertos activos
-			salidaPing=$(hping3 -S -p 22 -c 6 -I "$3" "$1"  )
+			salidaPing=$(sudo hping3 -S -p 22 -c 5 -I "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 		
-			salidaPing=$(hping3 -S -p "$2" -c 6 "$1"  )
+			salidaPing=$(sudo hping3 -S -p "$2" -c 5 "$1"  )
 		
 		else 
 			errorMess "error de opciones -i -p"
@@ -227,23 +228,23 @@ function PingDetection {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			salidaPing=$(ping -c 6 "$1")
+			salidaPing=$(ping -c 5 "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "El ping se realizara sin puerto especifico
 				Para hacer ping a un puerto especifico use el flag -f"
 			
-			salidaPing=$(ping -c 6  -I "$3" "$1")
+			salidaPing=$(ping -c 5  -I "$3" "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 			echo "El ping se realizara sin puerto especifico
 				Para hacer ping a un puerto especifico use el flag -f"
 			
-			salidaPing=$(ping -c 6  "$1")
+			salidaPing=$(ping -c 5  "$1")
 			
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 			
-			salidaPing=$(ping -c 6  -I "$3" "$1")
+			salidaPing=$(ping -c 5  -I "$3" "$1")
 			
 		else
 			errorMess "error de opciones -i -p"
@@ -258,6 +259,44 @@ function PingDetection {
 
 
 }
+
+##Funcion encargada de escanear el puerto remoto de condor y determinar si el servicio arranca 
+function portScan {
+	
+	
+	
+	portOrigin=$(nmap   -T4 "$1")
+	portsave=$(echo "$portOrigin" | grep  /)
+	
+	$(echo "$portsave" >> "puertosde-$1.txt")
+	
+	portOutput=$(echo "$portOrigin" | grep condor | cut -d ' ' -f1 | cut -d '/' -f1 )
+  
+	if [[ $? != 0 ]]; then
+		echo "Command failed."
+	elif [[ $portOutput ]]; then
+	
+	$(echo " " >> "$fileName")
+	$(echo "condor visible------------------------------------------------" >> "$fileName")
+	$(echo "Se ha encontrado condor corriendo en el puerto: " >> "$fileName")
+	$(echo "$portOutput" >> "$fileName")
+	$(echo "Recuerde que HTCondor utiliza el puerto 9618 por defecto para el Daemon condor_collector " >> "$fileName")
+	$(echo "-----------------------------------------------------------" >> "$fileName")
+		
+		
+	else
+		$(echo "condor visible------------------------------------------------" >> "$fileName")
+		$(echo "No se ha detectado condor_collector o algun servicio de condor en la direccion especificada   " >> "$fileName")
+		$(echo "$portOutput" >> "$fileName")
+		$(echo "-----------------------------------------------------------" >> "$fileName")
+	fi
+  
+		
+	
+	
+}
+
+
 
 ##funcion de putdate para poner la fecha en el log
 
@@ -284,6 +323,8 @@ function AutomaticMode {
 	
 	
 	curlmachine 
+	
+	portScan $host
 	
 	tracerouteFull $host $port $interface
 	
@@ -371,10 +412,9 @@ do
 			validateinterfaces $OPTARG
 			;;
 		t)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
+			echo "Text port"
+			portmode=true
+			
 			;;
 		N)
 			echo "se lanza en modo a internet"
@@ -409,7 +449,7 @@ do
 			;;
 		\?)
 			echo "
-				Usage: condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
+				Usage: condor_net [-a] [-f] [-m] [-s] [-t] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
 
 				-a Automatic	make a report automatically.
 				-f Firewall	was configured to run through most firewalls.
@@ -444,11 +484,13 @@ else
 	if [[ $netmode == true ]]; then
 		curlmachine
 	
-	else 
-		
- 
-	fi
+	fi 
 	
+	
+	if  [[ $portmode == true ]]; then
+		portScan
+		
+	fi
  
 fi
 
