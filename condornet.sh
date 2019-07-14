@@ -12,6 +12,7 @@ interface=0
 args=$#
 last=${*: -1:1}
 salidaTrace=''
+#portExit=''
 fileName='info.txt'
 
 ## Function definitions
@@ -70,7 +71,7 @@ function isHost {
 	if [[ $? == 0 ]] ; then
 		
 		host=$1
-		echo $host
+		##echo $host
 		
 	else
 		echo "Invalid Host"
@@ -86,9 +87,9 @@ function toolValidator {
 	
 	DRUSH_VERSION="$(traceroute --version)"
 	
-	echo ${DRUSH_VERSION}
 	
-	if [[ "$DRUSH_VERSION" == *"Version"* ]]; then
+	
+	if [[ $? != 0 ]]; then
 		echo "Drush is installed"
 	else
 		echo "$(sudo apt-get install traceroute)"
@@ -271,11 +272,14 @@ function PingDetection {
 function tracehost {
 	
 	
-	portOutput=$(tcptraceroute -n lascilab.univalle.edu.co | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
+	portOutputSave=$(tcptraceroute -n "$1" | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
 	
-	
+	echo $portOutputSave
 
 }
+
+
+
 
 ##Funcion encargada de escanear el puerto remoto de condor y determinar si el servicio arranca 
 function portScan {
@@ -283,31 +287,45 @@ function portScan {
 	
 	
 	portOrigin=$(nmap   -T4 "$1")
-	  
+	
 	if [[ $? != 0 ]]; then
 		echo "Command failed."
 		
 	elif [[ $portOrigin ]]; then
 	
-	
-	portsave=$(echo "$portOrigin" | grep  /)
-	
-	$(echo "$portsave" >> "puertosde-$1.txt")
-	
-	portOutput=$(echo "$portOrigin" | grep condor | cut -d ' ' -f1 | cut -d '/' -f1 )
-	
-	
-	$(echo " " >> "$fileName")
-	$(echo "condor visible------------------------------------------------" >> "$fileName")
-	$(echo "Se ha encontrado condor corriendo en el puerto: " >> "$fileName")
-	$(echo "$portOutput" >> "$fileName")
-	$(echo "Recuerde que HTCondor utiliza el puerto 9618 por defecto para el Daemon condor_collector " >> "$fileName")
-	$(echo "-----------------------------------------------------------" >> "$fileName")
 		
+		
+		if [[ $(echo "$portOrigin" | grep  "filtered ports") ]]; then
+						
+			echo "El host se encuentra detras de politicas de filtrado"
+		fi
+	
+		portOutput=$(echo "$portOrigin" | grep condor | cut -d ' ' -f1 | cut -d '/' -f1 )
+		
+		if [[ $portOutput ]]; then
+				
+			$(echo "condor visible------------------------------------------------" >> "$fileName")
+			$(echo "Se ha encontrado condor corriendo en el puerto: " >> "$fileName")
+			$(echo "$portOutput" >> "$fileName")
+			$(echo "Recuerde que HTCondor utiliza el puerto 9618 por defecto para el Daemon condor_collector " >> "$fileName")
+			$(echo "-----------------------------------------------------------" >> "$fileName")
+			
+		else
+			$(echo "condor visible------------------------------------------------" >> "$fileName")
+			$(echo "No se ha detectado condor_collector o algun servicio de condor en la direccion especificada   " >> "$fileName")
+			$(echo "-----------------------------------------------------------" >> "$fileName")
+		
+		fi
+	
+	
+		portsave=$(echo "$portOrigin" | grep  /)
+	
+		$(echo "$portsave" >> "puertosde-$1.txt")
+	
 		
 	else
 		$(echo "condor visible------------------------------------------------" >> "$fileName")
-		$(echo "No se ha detectado condor_collector o algun servicio de condor en la direccion especificada   " >> "$fileName")
+		$(echo "No se pudieron analizar los puertos" >> "$fileName")
 		$(echo "-----------------------------------------------------------" >> "$fileName")
 	fi
   
@@ -338,13 +356,12 @@ function AutomaticMode {
 		
 		isHost $var1
 		#host=$var1
-	else 
 	
-	 echo $host	
 	fi
 	
 	
 	curlmachine 
+	#tracehost $host
 	
 	portScan $host
 	
@@ -500,7 +517,7 @@ done
 if [[ $automatic == true ]]; then
 	putDate
 	AutomaticMode
-	
+	echo $portExit
 else 
 	putDate
 	if [[ $netmode == true ]]; then
