@@ -64,8 +64,13 @@ function isUbuntu {
 
 ##Funcion para defnir validez de una ip- Se debe cambiar para usar nombres
 function isHost {
-	if [[  $1 =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]] ; then
+	
+	hostresult=$(getent hosts "$1")
+	
+	if [[ $? == 0 ]] ; then
+		
 		host=$1
+		echo $host
 		
 	else
 		echo "Invalid Host"
@@ -260,21 +265,37 @@ function PingDetection {
 
 }
 
+##Funcion encargada de realizar la extraccion de hosts
+##toca incorporarla con la funcion de traceroute
+
+function tracehost {
+	
+	
+	portOutput=$(tcptraceroute -n lascilab.univalle.edu.co | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
+	
+	
+
+}
+
 ##Funcion encargada de escanear el puerto remoto de condor y determinar si el servicio arranca 
 function portScan {
 	
 	
 	
 	portOrigin=$(nmap   -T4 "$1")
+	  
+	if [[ $? != 0 ]]; then
+		echo "Command failed."
+		
+	elif [[ $portOrigin ]]; then
+	
+	
 	portsave=$(echo "$portOrigin" | grep  /)
 	
 	$(echo "$portsave" >> "puertosde-$1.txt")
 	
 	portOutput=$(echo "$portOrigin" | grep condor | cut -d ' ' -f1 | cut -d '/' -f1 )
-  
-	if [[ $? != 0 ]]; then
-		echo "Command failed."
-	elif [[ $portOutput ]]; then
+	
 	
 	$(echo " " >> "$fileName")
 	$(echo "condor visible------------------------------------------------" >> "$fileName")
@@ -287,7 +308,6 @@ function portScan {
 	else
 		$(echo "condor visible------------------------------------------------" >> "$fileName")
 		$(echo "No se ha detectado condor_collector o algun servicio de condor en la direccion especificada   " >> "$fileName")
-		$(echo "$portOutput" >> "$fileName")
 		$(echo "-----------------------------------------------------------" >> "$fileName")
 	fi
   
@@ -315,7 +335,9 @@ function AutomaticMode {
 		echo 'Introduzca un host:'
 		#leer el dato del teclado y guardarlo en la variable de usuario var1
 		read var1
-		host=$var1
+		
+		isHost $var1
+		#host=$var1
 	else 
 	
 	 echo $host	
@@ -371,7 +393,7 @@ existArguments
 isUbuntu
 
 ##control de flags
-while getopts "afmsNco:i:p:h:" OPTION
+while getopts "afmtsNco:i:p:h:" OPTION
 do
 	case $OPTION in
 		
@@ -480,7 +502,7 @@ if [[ $automatic == true ]]; then
 	AutomaticMode
 	
 else 
-	
+	putDate
 	if [[ $netmode == true ]]; then
 		curlmachine
 	
@@ -488,7 +510,7 @@ else
 	
 	
 	if  [[ $portmode == true ]]; then
-		portScan
+		portScan $host
 		
 	fi
  
