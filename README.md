@@ -36,6 +36,7 @@ docker pull recad/condornetworktool
 				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
 				-h Ip_outside	Ip outside of network.
+				-l List_firewall	Search firewalls in a route.
 				
 				
 				?              Help
