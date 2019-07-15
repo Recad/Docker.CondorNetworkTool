@@ -1,3 +1,28 @@
-2019-07-14 17:31:17
-Outside ip--------------------------------------------------
-{"ip":"190.99.242.216"}
+###################################################################-----------------------------------------------------------
+FECHA: 2019-07-14 21:35:05
+###################################################################
+   
+El host es: lascilab.univalle.edu.co
+ 
+La ip de salida es: {"ip":"190.99.242.216"}
+ 
+El host se encuentra detras de politicas de filtrado (Firewall)
+ 
+Se ha encontrado condor corriendo en el puerto: 9618
+Recuerde que HTCondor utiliza el puerto 9618 por defecto para el Daemon condor_collector 
+ 
+###################################################################
+Ruta tomada:
+ 
+
+ 
+###################################################################
+Resultado de hacer ping:
+ 
+HPING lascilab.univalle.edu.co (enp1s0 45.5.164.207): S set, 40 headers + 0 data bytes
+len=46 ip=45.5.164.207 ttl=56 DF id=0 sport=80 flags=SA seq=0 win=29200 rtt=71.8 ms
+len=46 ip=45.5.164.207 ttl=56 DF id=0 sport=80 flags=SA seq=1 win=29200 rtt=103.7 ms
+len=46 ip=45.5.164.207 ttl=56 DF id=0 sport=80 flags=SA seq=2 win=29200 rtt=95.7 ms
+len=46 ip=45.5.164.207 ttl=56 DF id=0 sport=80 flags=SA seq=3 win=29200 rtt=39.6 ms
+len=46 ip=45.5.164.207 ttl=56 DF id=0 sport=80 flags=SA seq=4 win=29200 rtt=127.5 ms
+ 

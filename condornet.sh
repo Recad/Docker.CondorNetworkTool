@@ -5,6 +5,7 @@ automatic=false
 firewall=false
 netmode=false
 portmode=false
+listFirewall=false
 Os='None'
 host=0
 port=0
@@ -39,6 +40,7 @@ function errorMess {
 				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
 				-h Ip_outside	Ip outside of network
+				-l List_firewall	Search firewalls in a route.
 				
 
 
@@ -63,7 +65,7 @@ function isUbuntu {
 	fi
 }
 
-##Funcion para defnir validez de una ip- Se debe cambiar para usar nombres
+##Funcion para defnir validez de una ip
 function isHost {
 	
 	hostresult=$(getent hosts "$1")
@@ -72,6 +74,8 @@ function isHost {
 		
 		host=$1
 		##echo $host
+		$(echo "El host es: $host" >> "$fileName")
+		$(echo " " >> "$fileName")
 		
 	else
 		echo "Invalid Host"
@@ -127,7 +131,8 @@ function existArguments {
 				-N Internet	define if my resource goes directly to the internet.
 				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
-				-h Ip_outside	Ip outside of network
+				-h Ip_outside	Ip outside of network.
+				-l List_firewall	Search firewalls in a route.
 				
 
 
@@ -150,19 +155,19 @@ function tracerouteFull {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 		
 			
-			salidaTrace=$(tcptraceroute "$1")
+			$salidaTrace=$(tcptraceroute "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaTrace=$(tcptraceroute -i "$3" "$1" "$2" )
+			$salidaTrace=$(tcptraceroute -i "$3" "$1" "$2" )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then 
 		
-			salidaTrace=$(tcptraceroute "$1" -i "$3")
+			$salidaTrace=$(tcptraceroute "$1" -i "$3")
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
-			salidaTrace=$(tcptraceroute "$1" "$2")
+			$salidaTrace=$(tcptraceroute "$1" "$2")
 		else 
 			errorMess "error de opciones -i -p"
 		fi
@@ -173,20 +178,20 @@ function tracerouteFull {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			salidaTrace=$(traceroute "$1")
+			$salidaTrace=$(traceroute "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaTrace=$(traceroute -i "$3" -p "$2" "$1"  )
+			$salidaTrace=$(traceroute -i "$3" -p "$2" "$1"  )
 			
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then 
 		
-			salidaTrace=$(traceroute -i "$3" "$1"  )
+			$salidaTrace=$(traceroute -i "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 			
-			salidaTrace=$(traceroute -p "$2" "$1"  )
+			$salidaTrace=$(traceroute -p "$2" "$1"  )
 		 
 		else
 			errorMess "error de opciones -i -p"
@@ -195,9 +200,11 @@ function tracerouteFull {
 		
 		
 	fi
-	$(echo "Trace result-----------------------------------------------" >> "$fileName")
+	$(echo "###################################################################" >> "$fileName")
+	$(echo "Ruta tomada:" >> "$fileName")
+	$(echo " " >> "$fileName")
 	$(echo "$salidaTrace" >> "$fileName")
-	$(echo "-----------------------------------------------------------" >> "$fileName")
+	$(echo " " >> "$fileName")
 }
 ##Funcion para hacer ping
 # entrada (host port interface)
@@ -222,7 +229,7 @@ function PingDetection {
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 		
-			salidaPing=$(sudo hping3 -S -p "$2" -c 5 "$1"  )
+			salidaPing=$(sudo hping3 -S  -p "$2" -c 5 "$1" )
 		
 		else 
 			errorMess "error de opciones -i -p"
@@ -234,23 +241,22 @@ function PingDetection {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			salidaPing=$(ping -c 5 "$1")
+			salidaPing=$(ping -c 5  -q "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "El ping se realizara sin puerto especifico
-				Para hacer ping a un puerto especifico use el flag -f"
+				Para hacer ping a un puerto especifico use el flag -p"
 			
-			salidaPing=$(ping -c 5  -I "$3" "$1")
+			salidaPing=$(ping -c 5 -q -p "$2" -I "$3" "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
-			echo "El ping se realizara sin puerto especifico
-				Para hacer ping a un puerto especifico use el flag -f"
 			
-			salidaPing=$(ping -c 5  "$1")
+			
+			salidaPing=$(ping -c 5 -q -p "$2" "$1")
 			
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 			
-			salidaPing=$(ping -c 5  -I "$3" "$1")
+			salidaPing=$(ping -c 5 -q -I "$3" "$1")
 			
 		else
 			errorMess "error de opciones -i -p"
@@ -259,9 +265,23 @@ function PingDetection {
 		
 		
 	fi
-	$(echo "Result ping------------------------------------------------" >> "$fileName")
-	$(echo "$salidaPing" >> "$fileName")
-	$(echo "-----------------------------------------------------------" >> "$fileName")
+	
+	if [[ $? == 0 ]] ; then
+		$(echo "###################################################################" >> "$fileName")
+		$(echo "Resultado de hacer ping:" >> "$fileName")
+		$(echo " " >> "$fileName")
+		$(echo "$salidaPing" >> "$fileName")		
+		$(echo " " >> "$fileName")
+		
+	else
+		$(echo "###################################################################" >> "$fileName")
+		$(echo "Resultado de hacer ping:" >> "$fileName")
+		$(echo " " >> "$fileName")
+		$(echo "No se pudo realizar el ping" >> "$fileName")
+		$(echo " " >> "$fileName")
+	fi
+	
+	
 
 
 }
@@ -272,9 +292,10 @@ function PingDetection {
 function tracehost {
 	
 	
-	portOutputSave=$(tcptraceroute -n "$1" | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
+	portOutputSave=$( tcptraceroute -n "$host" | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
 	
 	echo $portOutputSave
+	
 
 }
 
@@ -296,24 +317,26 @@ function portScan {
 		
 		
 		if [[ $(echo "$portOrigin" | grep  "filtered ports") ]]; then
+		
+			
+			$(echo "El host se encuentra detras de politicas de filtrado (Firewall)" >> "$fileName")
+			$(echo " " >> "$fileName")
 						
-			echo "El host se encuentra detras de politicas de filtrado"
 		fi
 	
 		portOutput=$(echo "$portOrigin" | grep condor | cut -d ' ' -f1 | cut -d '/' -f1 )
 		
 		if [[ $portOutput ]]; then
 				
-			$(echo "condor visible------------------------------------------------" >> "$fileName")
-			$(echo "Se ha encontrado condor corriendo en el puerto: " >> "$fileName")
-			$(echo "$portOutput" >> "$fileName")
+			
+			$(echo "Se ha encontrado condor corriendo en el puerto: $portOutput" >> "$fileName")
 			$(echo "Recuerde que HTCondor utiliza el puerto 9618 por defecto para el Daemon condor_collector " >> "$fileName")
-			$(echo "-----------------------------------------------------------" >> "$fileName")
+			$(echo " " >> "$fileName")
 			
 		else
-			$(echo "condor visible------------------------------------------------" >> "$fileName")
+			
 			$(echo "No se ha detectado condor_collector o algun servicio de condor en la direccion especificada   " >> "$fileName")
-			$(echo "-----------------------------------------------------------" >> "$fileName")
+			$(echo " " >> "$fileName")
 		
 		fi
 	
@@ -324,9 +347,8 @@ function portScan {
 	
 		
 	else
-		$(echo "condor visible------------------------------------------------" >> "$fileName")
 		$(echo "No se pudieron analizar los puertos" >> "$fileName")
-		$(echo "-----------------------------------------------------------" >> "$fileName")
+		$(echo " " >> "$fileName")
 	fi
   
 		
@@ -342,8 +364,10 @@ function putDate {
 	
 	DATE=`date '+%Y-%m-%d %H:%M:%S'`
 	
-	$(echo "$DATE" >> "$fileName")
-	
+	$(echo "###################################################################-----------------------------------------------------------" >> "$fileName")
+	$(echo "FECHA: $DATE" >> "$fileName")
+	$(echo "###################################################################" >> "$fileName")
+	$(echo "   " >> "$fileName")
 	
 }
 
@@ -368,6 +392,8 @@ function AutomaticMode {
 	tracerouteFull $host $port $interface
 	
 	PingDetection $host $port $interface
+	
+	tracehost
 	
 }
 
@@ -398,8 +424,9 @@ function curlmachine {
 	hostname=$(hostname)
 	direccion=$(curl  https://api.ipify.org?format=json )
 	
-	$(echo "Outside ip--------------------------------------------------" >> "$fileName")
-	$(echo "$direccion" >> "$fileName")
+	
+	$(echo "La ip de salida es: $direccion" >> "$fileName")
+	$(echo " " >> "$fileName")
 
 }
 
@@ -471,7 +498,8 @@ do
 			#echo "The value of -f is $OPTARG"
 			
 			
-			if [[ $OPTARG > 0 ]] && [[ $OPTARG < 65535 ]]; then 
+			if (( $OPTARG > 0  && $OPTARG < 65535 )); then 
+				
 				port=$OPTARG
 				
 			else 		
@@ -483,6 +511,13 @@ do
 		h)
 			echo ""
 			isHost $OPTARG
+			
+			
+			;;
+		l)
+			
+			$listFirewall=true
+			
 			
 			
 			;;
@@ -501,6 +536,7 @@ do
 				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
 				-h Ip_outside	Ip outside of network.
+				-l List_firewall	Search firewalls in a route.
 				
 				
 
