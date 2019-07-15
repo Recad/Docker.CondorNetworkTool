@@ -275,7 +275,7 @@ function PingDetection {
 		
 	else
 		$(echo "###################################################################" >> "$fileName")
-		$(echo "Resultado de hacer ping:" >> "$fileName")
+		$(echo "Resultado de hacer ping: $?" >> "$fileName")
 		$(echo " " >> "$fileName")
 		$(echo "No se pudo realizar el ping" >> "$fileName")
 		$(echo " " >> "$fileName")

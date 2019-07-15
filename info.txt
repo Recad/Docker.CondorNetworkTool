@@ -1,0 +1,37 @@
+El host es: lascilab.univalle.edu.co
+ 
+###################################################################-----------------------------------------------------------
+FECHA: 2019-07-14 23:47:23
+###################################################################
+   
+La ip de salida es: {"ip":"190.99.242.216"}
+ 
+El host se encuentra detras de politicas de filtrado (Firewall)
+ 
+Se ha encontrado condor corriendo en el puerto: 9618
+Recuerde que HTCondor utiliza el puerto 9618 por defecto para el Daemon condor_collector 
+ 
+###################################################################
+Ruta tomada:
+ 
+ 1  192.168.1.1  0.654 ms  0.613 ms  0.553 ms
+ 2  * * *
+ 3  172.28.78.15  27.062 ms  26.624 ms  26.852 ms
+ 4  * * *
+ 5  207.164.5.45.in-addr.arpa (45.5.164.207)  27.362 ms  26.447 ms  25.881 ms
+ 6  207.164.5.45.in-addr.arpa (45.5.164.207)  26.656 ms  27.507 ms  27.494 ms
+ 7  * * *
+ 8  207.164.5.45.in-addr.arpa (45.5.164.207) [open]  36.596 ms  26.865 ms  29.249 ms
+ 
+###################################################################
+Resultado de hacer ping:
+ 
+HPING lascilab.univalle.edu.co (enp1s0 45.5.164.207): S set, 40 headers + 0 data bytes
+len=46 ip=45.5.164.207 ttl=57 DF id=0 sport=22 flags=SA seq=0 win=29200 rtt=27.8 ms
+len=46 ip=45.5.164.207 ttl=57 DF id=0 sport=22 flags=SA seq=1 win=29200 rtt=35.7 ms
+len=46 ip=45.5.164.207 ttl=57 DF id=0 sport=22 flags=SA seq=2 win=29200 rtt=35.5 ms
+len=46 ip=45.5.164.207 ttl=57 DF id=0 sport=22 flags=SA seq=3 win=29200 rtt=35.2 ms
+len=46 ip=45.5.164.207 ttl=57 DF id=0 sport=22 flags=SA seq=4 win=29200 rtt=35.1 ms
+ 
+la ruta 45.5.164.207 se encuentra detras de politicas de filtrado (Firewall)
+ 
