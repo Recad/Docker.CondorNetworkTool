@@ -12,7 +12,7 @@ port=0
 interface=0
 args=$#
 last=${*: -1:1}
-salidaTrace=''
+#salidaTrace=''
 #portExit=''
 fileName='info.txt'
 
@@ -155,19 +155,19 @@ function tracerouteFull {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 		
 			
-			$salidaTrace=$(tcptraceroute "$1")
+			salidaTrace=$(tcptraceroute "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			$salidaTrace=$(tcptraceroute -i "$3" "$1" "$2" )
+			salidaTrace=$(tcptraceroute -i "$3" "$1" "$2" )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then 
 		
-			$salidaTrace=$(tcptraceroute "$1" -i "$3")
+			salidaTrace=$(tcptraceroute -i "$3" "$1" )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
-			$salidaTrace=$(tcptraceroute "$1" "$2")
+			salidaTrace=$(tcptraceroute "$1" "$2" )
 		else 
 			errorMess "error de opciones -i -p"
 		fi
@@ -178,20 +178,20 @@ function tracerouteFull {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			$salidaTrace=$(traceroute "$1")
+			salidaTrace=$(traceroute "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			$salidaTrace=$(traceroute -i "$3" -p "$2" "$1"  )
+			salidaTrace=$(traceroute -i "$3" -p "$2" "$1"  )
 			
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then 
 		
-			$salidaTrace=$(traceroute -i "$3" "$1"  )
+			salidaTrace=$(traceroute -i "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 			
-			$salidaTrace=$(traceroute -p "$2" "$1"  )
+			salidaTrace=$(traceroute -p "$2" "$1"  )
 		 
 		else
 			errorMess "error de opciones -i -p"
@@ -294,9 +294,24 @@ function tracehost {
 	
 	portOutputSave=$( tcptraceroute -n "$host" | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
 	
-	echo $portOutputSave
+	declare -a directions=($portOutputSave)
+	#echo "array"
+	#echo ${directions[*]}
+	#echo ${#directions[*]}
+	for i in ${directions[@]}
 	
-
+	do
+        
+        if [[ $(nmap   -T4 "$i" | grep  "filtered ports")  ]]; then
+		
+			
+			$(echo "la ruta "$i" se encuentra detras de politicas de filtrado (Firewall)" >> "$fileName")
+			$(echo " " >> "$fileName")
+						
+		fi
+      
+	
+	done
 }
 
 
@@ -437,7 +452,7 @@ existArguments
 isUbuntu
 
 ##control de flags
-while getopts "afmtsNco:i:p:h:" OPTION
+while getopts "afmltsNco:i:p:h:" OPTION
 do
 	case $OPTION in
 		
@@ -516,7 +531,7 @@ do
 			;;
 		l)
 			
-			$listFirewall=true
+			listFirewall=true
 			
 			
 			
@@ -553,7 +568,7 @@ done
 if [[ $automatic == true ]]; then
 	putDate
 	AutomaticMode
-	echo $portExit
+	#echo $portExit
 else 
 	putDate
 	if [[ $netmode == true ]]; then
@@ -565,6 +580,10 @@ else
 	if  [[ $portmode == true ]]; then
 		portScan $host
 		
+	fi
+	
+	if [[ $listFirewall == true ]]; then
+		tracehost
 	fi
  
 fi

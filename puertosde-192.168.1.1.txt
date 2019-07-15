@@ -1,0 +1,4 @@
+Starting Nmap 7.60 ( https://nmap.org ) at 2019-07-14 22:31 -05
+23/tcp    open  telnet
+80/tcp    open  http
+52869/tcp open  unknown
