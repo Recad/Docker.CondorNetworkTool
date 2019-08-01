@@ -182,7 +182,7 @@ function tracerouteFull {
 			salidaTrace=$(traceroute "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
-			echo "con interface y puerto"
+			#echo "con interface y puerto"
 			
 			salidaTrace=$(traceroute -i "$3" -p "$2" "$1"  )
 			
@@ -240,16 +240,17 @@ function PingDetection {
 			salidaPing=$(sudo hping3 -S -p "$defaultPort" -c 5 "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
-			echo "con interface y puerto"
+			#echo "con interface y puerto"
 			
 			salidaPing=$(sudo hping3 -S -s "$2" -p "$defaultPort" -c 5 -I "$3" "$1"  )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 		##Se debe integrar esta parte con la busqueda de puertos activos
+			
 			salidaPing=$(sudo hping3 -S -p "$defaultPort" -c 5 -I "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
-		
+			
 			salidaPing=$(sudo hping3 -S  -s "$2" -p "$defaultPort" -c 5 "$1" )
 		
 		else 
@@ -365,7 +366,8 @@ function portScan {
 			portdefaultemp=$(echo "$portOrigin" | grep open | head -1 |awk '{print $1}'|awk '{print ($0+0)}')
 		if [[ $portdefaultemp ]]; then
 			
-			defaultPort=portdefaultemp
+			defaultPort=$portdefaultemp
+			
 			
 		fi
 	
