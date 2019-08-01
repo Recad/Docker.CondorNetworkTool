@@ -9,6 +9,7 @@ listFirewall=false
 Os='None'
 host=0
 port=0
+defaultPort=0
 interface=0
 args=$#
 last=${*: -1:1}
@@ -210,26 +211,46 @@ function tracerouteFull {
 # entrada (host port interface)
 function PingDetection {
 	
+	
+	
+	
 	if [[ $firewall == true ]]; then
+	
+		if [[ $defaultPort == 0	]]; then
+		
+			echo "No se tiene un puerto del destino valido. Ejecute utilizando el flag -t" 
+			echo "si ya utilizo el flag -t y sigue viendo este mensaje posiblemente el destino no tenga puertos que se puedan usar"
+			
+			$(echo "###################################################################" >> "$fileName")
+			$(echo "Resultado de hacer ping:" >> "$fileName")
+			$(echo " " >> "$fileName")
+			$(echo "No se pudo realizar el ping: puerto no disponible" >> "$fileName")		
+			$(echo " " >> "$fileName")
+			
+			return
+		
+		fi
+		
+	
 			
 
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			salidaPing=$(sudo hping3 -S -p 22 -c 5 "$1")
+			salidaPing=$(sudo hping3 -S -p "$defaultPort" -c 5 "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			echo "con interface y puerto"
 			
-			salidaPing=$(sudo hping3 -S -p "$2" -c 5 -I "$3" "$1"  )
+			salidaPing=$(sudo hping3 -S -s "$2" -p "$defaultPort" -c 5 -I "$3" "$1"  )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 		##Se debe integrar esta parte con la busqueda de puertos activos
-			salidaPing=$(sudo hping3 -S -p 22 -c 5 -I "$3" "$1"  )
+			salidaPing=$(sudo hping3 -S -p "$defaultPort" -c 5 -I "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 		
-			salidaPing=$(sudo hping3 -S  -p "$2" -c 5 "$1" )
+			salidaPing=$(sudo hping3 -S  -s "$2" -p "$defaultPort" -c 5 "$1" )
 		
 		else 
 			errorMess "error de opciones -i -p"
@@ -293,6 +314,7 @@ function tracehost {
 	
 	
 	portOutputSave=$( tcptraceroute -n "$host" | awk '{print $2}' |   sed -e 's/*//g' | uniq -u)
+	#echo $portOutputSave
 	
 	declare -a directions=($portOutputSave)
 	#echo "array"
@@ -300,9 +322,10 @@ function tracehost {
 	#echo ${#directions[*]}
 	for i in ${directions[@]}
 	
-	do
+	do	
+		
         
-        if [[ $(nmap   -T4 "$i" | grep  "filtered ports")  ]]; then
+        if [[ $(nmap  -Pn -T4 "$i" | grep 'filtered ports\|are filtered')  ]]; then
 		
 			
 			$(echo "la ruta "$i" se encuentra detras de politicas de filtrado (Firewall)" >> "$fileName")
@@ -318,11 +341,12 @@ function tracehost {
 
 
 ##Funcion encargada de escanear el puerto remoto de condor y determinar si el servicio arranca 
+##Tambien habilita un puerto valido para hpin3
 function portScan {
 	
 	
 	
-	portOrigin=$(nmap   -T4 "$1")
+	portOrigin=$(nmap -Pn  -T4 "$1")
 	
 	if [[ $? != 0 ]]; then
 		echo "Command failed."
@@ -331,12 +355,18 @@ function portScan {
 	
 		
 		
-		if [[ $(echo "$portOrigin" | grep  "filtered ports") ]]; then
+		if [[ $(echo "$portOrigin" | grep  'filtered ports\|are filtered') ]]; then
 		
 			
 			$(echo "El host se encuentra detras de politicas de filtrado (Firewall)" >> "$fileName")
 			$(echo " " >> "$fileName")
 						
+		fi
+			portdefaultemp=$(echo "$portOrigin" | grep open | head -1 |awk '{print $1}'|awk '{print ($0+0)}')
+		if [[ $portdefaultemp ]]; then
+			
+			defaultPort=portdefaultemp
+			
 		fi
 	
 		portOutput=$(echo "$portOrigin" | grep condor | cut -d ' ' -f1 | cut -d '/' -f1 )
@@ -493,7 +523,7 @@ do
 			validateinterfaces $OPTARG
 			;;
 		t)
-			echo "Text port"
+			echo "Test port"
 			portmode=true
 			
 			;;
@@ -525,7 +555,7 @@ do
 		
 		h)
 			echo ""
-			isHost $OPTARG
+			host=$OPTARG
 			
 			
 			;;
