@@ -5,7 +5,7 @@ Diagnostic tool for networks focused on the use of htcondor flocking
 
 requirements:
 
-- inetutils-tools
+- net-tools
 - traceroute 
 - tcptraceroute 
 - iputils-ping 

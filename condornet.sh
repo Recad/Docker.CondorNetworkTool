@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-##Var definitions
+##Var definitions-------------------------------------------------------
 automatic=false
 firewall=false
 netmode=false
@@ -17,9 +17,7 @@ last=${*: -1:1}
 #portExit=''
 fileName='info.txt'
 
-## Function definitions
-
-
+## Function definitions-------------------------------------------------
 
 ##funcion de error con menu
 function errorMess {
@@ -28,20 +26,17 @@ function errorMess {
 	echo "				
 				$1
 	
-				Usage: condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
+				Usage: ./condornet.sh [-a] [-f] [-t] [-N] [-c] [-l] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
 
 				-a Automatic	make a report automatically.
-				-f Firewall	was configured to run through most firewalls.
-				-m Master	runs on a condor master node.
-				-s Node		runs on a condor node.        
+				-f Firewall	was configured to run through most firewalls.        
 				-i Interface	define network interface to use for utilities.
 				-p Port		specify a port for use of the tools
 				-t Test port	try to detect blocked ports in a firewall.
 				-N Internet	define if my resource goes directly to the internet.
-				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
 				-h Ip_outside	Ip outside of network
-				-l List_firewall	Search firewalls in a route.
+				-l List_firewall Search firewalls in a route.
 				
 
 
@@ -120,20 +115,17 @@ function existArguments {
 		
 	elif (( $args == 1 )) && [[ $last == '?' ]]; then
 		echo "
-				Usage: condor_net [-a] [-f] [-m] [-s] [-Tp] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
+				Usage: ./condornet.sh [-a] [-f] [-t] [-N] [-c] [-l] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
 
 				-a Automatic	make a report automatically.
-				-f Firewall	was configured to run through most firewalls.
-				-m Master	runs on a condor master node.
-				-s Node		runs on a condor node.        
+				-f Firewall	was configured to run through most firewalls.        
 				-i Interface	define network interface to use for utilities.
 				-p Port		specify a port for use of the tools
 				-t Test port	try to detect blocked ports in a firewall.
 				-N Internet	define if my resource goes directly to the internet.
-				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
-				-h Ip_outside	Ip outside of network.
-				-l List_firewall	Search firewalls in a route.
+				-h Ip_outside	Ip outside of network
+				-l List_firewall Search firewalls in a route.
 				
 
 
@@ -483,7 +475,7 @@ function curlmachine {
 existArguments
 isUbuntu
 
-##control de flags
+##control de flags -----------------------------------------------------
 while getopts "afmltsNco:i:p:h:" OPTION
 do
 	case $OPTION in
@@ -506,18 +498,6 @@ do
 			
 			;;
 		
-		m)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
-			;;
-		s)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
-			;;
 		i)
 			#echo "The value of -f is $OPTARG"
 			
@@ -534,12 +514,6 @@ do
 			netmode=true
 			
 			##curlmachine 
-			;;
-		c)
-			echo "The value of -f is $OPTARG"
-			MYOPTF=$OPTARG
-			echo $MYOPTF
-			exit
 			;;
 		p)
 			#echo "The value of -f is $OPTARG"
@@ -570,20 +544,17 @@ do
 			;;
 		\?)
 			echo "
-				Usage: condor_net [-a] [-f] [-m] [-s] [-t] [-N] [-c] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
+				Usage: ./condornet.sh [-a] [-f] [-t] [-N] [-c] [-l] [-i Interface] [-p Port] [-o Name] [-h IP_OUTSIDE]
 
 				-a Automatic	make a report automatically.
-				-f Firewall	was configured to run through most firewalls.
-				-m Master	runs on a condor master node.
-				-s Node		runs on a condor node.        
+				-f Firewall	was configured to run through most firewalls.        
 				-i Interface	define network interface to use for utilities.
 				-p Port		specify a port for use of the tools
 				-t Test port	try to detect blocked ports in a firewall.
 				-N Internet	define if my resource goes directly to the internet.
-				-c condor_sub	runs this tool in the entire HTCondor pool as a task.
 				-o Outputfile	Name of outputfile.
-				-h Ip_outside	Ip outside of network.
-				-l List_firewall	Search firewalls in a route.
+				-h Ip_outside	Ip outside of network
+				-l List_firewall Search firewalls in a route.
 				
 				
 
@@ -597,17 +568,23 @@ do
 done
 
 
+##Ejecución general-----------------------------------------------------
 if [[ $automatic == true ]]; then
 	putDate
 	AutomaticMode
 	#echo $portExit
 else 
+
+
 	putDate
+	isHost  $host
 	if [[ $netmode == true ]]; then
 		curlmachine
 	
 	fi 
+	tracerouteFull $host $port $interface
 	
+	PingDetection $host $port $interface
 	
 	if  [[ $portmode == true ]]; then
 		portScan $host
