@@ -16,10 +16,9 @@
  nmap \
  curl
  
-CMD chown root /usr/sbin/hping3
-CMD chmod u+s /usr/sbin/hping3
+CMD setcap cap_net_raw,cap_net_admin=eip /usr/sbin/hping3
+CMD setcap cap_net_raw,cap_net_admin=eip /usr/bin/nmap
  
-
 ADD condornet.sh /usr/bin
 
 CMD chown root /usr/bin/condornet.sh 

@@ -226,21 +226,21 @@ function PingDetection {
 		if [[ $2 == 0 ]] && [[ $3 == 0 ]]; then
 			
 			
-			salidaPing=$(sudo hping3 -S -p "$defaultPort" -c 5 "$1")
+			salidaPing=$(hping3 -S -p "$defaultPort" -c 5 "$1")
 			
 		elif [[ $2 != 0 ]] && [[ $3 != 0 ]]; then
 			#echo "con interface y puerto"
 			
-			salidaPing=$(sudo hping3 -S -s "$2" -p "$defaultPort" -c 5 -I "$3" "$1"  )
+			salidaPing=$(hping3 -S -s "$2" -p "$defaultPort" -c 5 -I "$3" "$1"  )
 		
 		elif [[ $2 == 0 ]] && [[ $3 != 0 ]]; then
 		##Se debe integrar esta parte con la busqueda de puertos activos
 			
-			salidaPing=$(sudo hping3 -S -p "$defaultPort" -c 5 -I "$3" "$1"  )
+			salidaPing=$(hping3 -S -p "$defaultPort" -c 5 -I "$3" "$1"  )
 			
 		elif [[ $2 != 0 ]] && [[ $3 == 0 ]]; then
 			
-			salidaPing=$(sudo hping3 -S  -s "$2" -p "$defaultPort" -c 5 "$1" )
+			salidaPing=$(hping3 -S  -s "$2" -p "$defaultPort" -c 5 "$1" )
 		
 		else 
 			errorMess "error de opciones -i -p"
