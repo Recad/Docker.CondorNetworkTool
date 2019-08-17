@@ -19,3 +19,5 @@
  
 
 ADD condornet.sh /usr/bin
+
+CMD chown root /usr/bin/condornet.sh 

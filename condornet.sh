@@ -315,7 +315,7 @@ function tracehost {
 	do	
 		
         
-        if [[ $(nmap  -Pn -T4 "$i" | grep 'filtered ports\|are filtered')  ]]; then
+        if [[ $(nmap --privileged  -Pn -T4 "$i" | grep 'filtered ports\|are filtered')  ]]; then
 		
 			
 			$(echo "la ruta "$i" se encuentra detras de politicas de filtrado (Firewall)" >> "$fileName")
@@ -336,7 +336,7 @@ function portScan {
 	
 	
 	
-	portOrigin=$(nmap -Pn  -T4 "$1")
+	portOrigin=$(nmap --privileged -Pn  -T4 "$1")
 	
 	if [[ $? != 0 ]]; then
 		echo "Command failed."
