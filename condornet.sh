@@ -63,20 +63,24 @@ function isUbuntu {
 
 ##Funcion para defnir validez de una ip
 function isHost {
-	
-	hostresult=$(getent hosts "$1")
-	
-	if [[ $? == 0 ]] ; then
-		
+
+	if [[ $1 =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
 		host=$1
-		##echo $host
-		$(echo "El host es: $host" >> "$fileName")
-		$(echo " " >> "$fileName")
+	else 
+		hostresult=$(getent hosts "$1")
 		
-	else
-		echo "Invalid Host"
-		errorMess
+		if [[ $? == 0 ]] ; then
 			
+			host=$1
+			##echo $host
+			$(echo "El host es: $host" >> "$fileName")
+			$(echo " " >> "$fileName")
+			
+		else
+			echo "Invalid Host"
+			errorMess
+				
+		fi
 	fi
 }
 
@@ -94,15 +98,8 @@ function toolValidator {
 	else
 		echo "$(sudo apt-get install traceroute)"
 	fi
-	
-	
-	
-	
-	
-	
+		
 }
-
-
 
 #Valida cantidad de flags y opciones
 function existArguments {
@@ -202,9 +199,9 @@ function tracerouteFull {
 ##Funcion para hacer ping
 # entrada (host port interface)
 function PingDetection {
+	echo "pingdetention"
 	
-	
-	
+	echo $defaultPort
 	
 	if [[ $firewall == true ]]; then
 	
@@ -356,6 +353,8 @@ function portScan {
 						
 		fi
 			portdefaultemp=$(echo "$portOrigin" | grep open | head -1 |awk '{print $1}'|awk '{print ($0+0)}')
+			echo "portdefault"
+			echo $portdefaultemp
 		if [[ $portdefaultemp ]]; then
 			
 			defaultPort=$portdefaultemp
@@ -582,15 +581,15 @@ else
 		curlmachine
 	
 	fi 
-	tracerouteFull $host $port $interface
 	
-	PingDetection $host $port $interface
 	
 	if  [[ $portmode == true ]]; then
 		portScan $host
 		
 	fi
+	tracerouteFull $host $port $interface
 	
+	PingDetection $host $port $interface
 	if [[ $listFirewall == true ]]; then
 		tracehost
 	fi
