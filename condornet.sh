@@ -199,9 +199,6 @@ function tracerouteFull {
 ##Funcion para hacer ping
 # entrada (host port interface)
 function PingDetection {
-	echo "pingdetention"
-	
-	echo $defaultPort
 	
 	if [[ $firewall == true ]]; then
 	
@@ -353,8 +350,8 @@ function portScan {
 						
 		fi
 			portdefaultemp=$(echo "$portOrigin" | grep open | head -1 |awk '{print $1}'|awk '{print ($0+0)}')
-			echo "portdefault"
-			echo $portdefaultemp
+			#echo "El primer puerto "
+			#echo $portdefaultemp
 		if [[ $portdefaultemp ]]; then
 			
 			defaultPort=$portdefaultemp
@@ -460,7 +457,7 @@ function validateinterfaces {
 function curlmachine {
 	
 	hostname=$(hostname)
-	direccion=$(curl  https://api.ipify.org?format=json )
+	direccion=$(curl  https://api.ipify.org)
 	
 	
 	$(echo "La ip de salida es: $direccion" >> "$fileName")

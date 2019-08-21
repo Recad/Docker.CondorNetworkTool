@@ -1,10 +1,13 @@
-Universe = docker
-docker_image=recad/condornetworktool
-Executable = /bin/bash
-Arguments  = condornet.sh -a -f -h google.com
-should_transfer_files = YES
+universe        = docker
+docker_image    = recad/condornetworktool:latest
+executable      = /usr/bin/condornet.sh
+arguments       = -f -h 157.253.205.92
+should_transfer_files   = YES
+transfer_input_files    = Run.sh,condornet.sh
 when_to_transfer_output = ON_EXIT
-output = out.$(Process)
-error = err.$(Process)
-log = log.$(Process)
+output                  = out.fitting.$(Process).txt
+error                   = err.fitting.$(Process).txt
+log                     = log.fitting.$(Process).txt
 queue 1
+
+

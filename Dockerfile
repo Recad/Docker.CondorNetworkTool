@@ -14,7 +14,8 @@
  hping3 \
  tcpdump \
  nmap \
- curl
+ curl \
+ sudo
  
 CMD setcap cap_net_raw,cap_net_admin=eip /usr/sbin/hping3
 CMD setcap cap_net_raw,cap_net_admin=eip /usr/bin/nmap
