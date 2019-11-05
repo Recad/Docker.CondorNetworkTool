@@ -19,7 +19,11 @@ or can use container recad/condornetworktool
 ```
 docker pull recad/condornetworktool
 ```
+With this command
 
+```
+docker run --rm -v $PWD:/home/ -w /home/ recad/condornetworktool /bin/bash condornet.sh -a -f -h "IP or Name"
+```
 
 ## Usage 
 
